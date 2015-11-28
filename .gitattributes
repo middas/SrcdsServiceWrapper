@@ -1,0 +1,4 @@
+*.cs		eol=crlf
+*.sln		eol=crlf
+*.config	eol=crlf
+*.csprof	eol=crlf
