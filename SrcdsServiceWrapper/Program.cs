@@ -1,25 +1,39 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using CommandLine;
+using System;
+using System.IO;
 using System.ServiceProcess;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SrcdsServiceWrapper
 {
-    static class Program
+    internal static class Program
     {
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        static void Main()
+        private static void Main(string[] args)
         {
-            ServiceBase[] ServicesToRun;
-            ServicesToRun = new ServiceBase[]
+            SrcdsOptions options = new SrcdsOptions();
+            if (Parser.Default.ParseArguments(args, options))
             {
-                new SrcdsService()
-            };
-            ServiceBase.Run(ServicesToRun);
+                if (!File.Exists(options.SrcdsPath))
+                {
+                    Console.WriteLine(options.GetUsage());
+                    Environment.Exit(1);
+                }
+
+                if (options.CheckForUpdates && ((string.IsNullOrEmpty(options.SteamCmdPath) && File.Exists(options.SteamCmdPath)) || string.IsNullOrEmpty(options.UpdateScriptPath)))
+                {
+                    Console.WriteLine(options.GetUsage());
+                    Environment.Exit(1);
+                }
+
+                ServiceBase[] ServicesToRun;
+                ServicesToRun = new ServiceBase[]
+                {
+                    new SrcdsService(options)
+                };
+                ServiceBase.Run(ServicesToRun);
+            }
         }
     }
 }
