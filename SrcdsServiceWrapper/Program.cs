@@ -1,7 +1,4 @@
-﻿using CommandLine;
-using System;
-using System.IO;
-using System.ServiceProcess;
+﻿using System.ServiceProcess;
 
 namespace SrcdsServiceWrapper
 {
@@ -12,28 +9,17 @@ namespace SrcdsServiceWrapper
         /// </summary>
         private static void Main(string[] args)
         {
-            SrcdsOptions options = new SrcdsOptions();
-            if (Parser.Default.ParseArguments(args, options))
+#if !DEBUG
+            ServiceBase[] ServicesToRun;
+            ServicesToRun = new ServiceBase[]
             {
-                if (!File.Exists(options.SrcdsPath))
-                {
-                    Console.WriteLine(options.GetUsage());
-                    Environment.Exit(1);
-                }
-
-                if (options.CheckForUpdates && ((string.IsNullOrEmpty(options.SteamCmdPath) && File.Exists(options.SteamCmdPath)) || string.IsNullOrEmpty(options.UpdateScriptPath)))
-                {
-                    Console.WriteLine(options.GetUsage());
-                    Environment.Exit(1);
-                }
-
-                ServiceBase[] ServicesToRun;
-                ServicesToRun = new ServiceBase[]
-                {
-                    new SrcdsService(options)
-                };
-                ServiceBase.Run(ServicesToRun);
-            }
+                new SrcdsService()
+            };
+            ServiceBase.Run(ServicesToRun);
+#else
+            var srv = new SrcdsService();
+            srv.Start(args);
+#endif
         }
     }
 }
